@@ -1,0 +1,5 @@
+test:
+opc.tcp://localhost:4840/
+HostName=FirstDevice.azure-devices.net;DeviceId=device1;SharedAccessKey=iqiqKgDNyAjji5nMSfZMA9BcaPkVd8exC1CUpNYDtg8=
+HostName=FirstDevice.azure-devices.net;DeviceId=device2;SharedAccessKey=JUwxUhAhz8q2b0hWVGuHAvFuJ61dMhVp097eSIGMq28=
+HostName=FirstDevice.azure-devices.net;DeviceId=device3;SharedAccessKey=Z2n5NFbcwsCiXuTCC0pBH/8dCYAN0QN07h/DdfEFO1g=
