@@ -36,5 +36,11 @@ namespace IndustrialIoT
             client.CallMethod($"ns=2;s=Device {Program.deviceNumber}", $"ns=2;s=Device {Program.deviceNumber}/ResetErrorStatus");
             await Task.Delay(1000);
         }
+        public static async Task SetProductionRate(int value)
+        {
+            client.WriteNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate", value);
+            await Task.Delay(1000);
+        }
+
     }
 }
