@@ -8,6 +8,8 @@ using System.Linq;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+using System.Net.Sockets;
 
 namespace IndustrialIoT
 {
@@ -40,6 +42,28 @@ namespace IndustrialIoT
             await client.SendEventAsync(eventMessage);
         }
 
-        #endregion Sending Messages
+        #endregion
+
+        #region Direct Methods
+        private async Task<MethodResponse> EmergencyStopHandler(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"\t METHOD EXECUTED: {methodRequest.Name}");
+            await OpcDevice.EmergencyStop();
+            return new MethodResponse(0);
+        }
+
+        private async Task<MethodResponse> ResetErrorStatusHandler(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"\t METHOD EXECUTED: {methodRequest.Name}");
+            await OpcDevice.ResetErrorStatus();
+            return new MethodResponse(0);
+        }
+        #endregion
+
+        public async Task InitializeHandlers()
+        {
+            await client.SetMethodHandlerAsync("EmergencyStop", EmergencyStopHandler, client);
+            await client.SetMethodHandlerAsync("ResetErrorStatus", ResetErrorStatusHandler, client);
+        }
     }
 }

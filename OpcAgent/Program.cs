@@ -23,6 +23,7 @@ namespace IndustrialIoT
             var device = new IoTDevice(deviceClient);
 
             Console.WriteLine($"Connection success!");
+            await device.InitializeHandlers();
             while (true)
             {
                 device.SendMessages(OpcDevice.client, deviceNumber);
