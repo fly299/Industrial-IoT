@@ -22,8 +22,13 @@ namespace IndustrialIoT
         Unknown = 8
     }
 
+
+
     public class IoTDevice
     {
+        bool started = true;
+        bool update = false;
+
         private readonly DeviceClient client;
 
         public IoTDevice(DeviceClient deviceClient)
@@ -31,6 +36,57 @@ namespace IndustrialIoT
             this.client = deviceClient;
         }
 
+        #region UpdateTwinOnChange
+        public async void updateCheck(OpcClient opcClient)
+        {
+            if (started)
+            {
+                await UpdateTwinAsync(OpcDevice.client);
+                started = false;
+                Console.Write("Device twin Start-Up update.");
+            }
+            else
+            {
+                Twin twin = await client.GetTwinAsync();
+                int value = (int)opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate").Value;
+                int twinValue = twin.Properties.Reported["productionRate"];
+                StringBuilder errorBuilder = new StringBuilder();
+                int errors = (int)opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/DeviceError").Value;
+                if ((errors & Convert.ToInt32(Errors.Unknown)) != 0)
+                {
+                    errorBuilder.Append("Unknown ");
+                }
+                if ((errors & Convert.ToInt32(Errors.SensorFailue)) != 0)
+                {
+                    errorBuilder.Append("SensorFailure ");
+                }
+                if ((errors & Convert.ToInt32(Errors.PowerFailure)) != 0)
+                {
+                    errorBuilder.Append("PowerFailure ");
+                }
+                if ((errors & Convert.ToInt32(Errors.EmergencyStop)) != 0)
+                {
+                    errorBuilder.Append("Emergency stop ");
+                }
+
+                string errorsString = errorBuilder.ToString();
+                string twinError = twin.Properties.Reported["deviceErrorsString"];
+
+                if(twinValue != value)
+                {
+                    await UpdateTwinAsync(OpcDevice.client);
+                    Console.WriteLine("ProductionRate Update");
+                }
+                
+                if(twinError != errorsString)
+                {
+                    await UpdateTwinAsync(OpcDevice.client);
+                    Console.WriteLine("Error Update");
+                }
+
+            }
+        }
+        #endregion
 
         #region Sending Messages
 
@@ -50,7 +106,7 @@ namespace IndustrialIoT
             eventMessage.ContentType = MediaTypeNames.Application.Json;
             eventMessage.ContentEncoding = "utf-8";
             await client.SendEventAsync(eventMessage);
-            await UpdateTwinAsync(OpcDevice.client);
+            updateCheck(opcClient);
         }
 
         #endregion
@@ -106,7 +162,8 @@ namespace IndustrialIoT
             var reportedProperties = new TwinCollection();
 
             reportedProperties["productionRate"] = opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate").Value;
-            reportedProperties["deviceErrors"] = errorsString;
+            reportedProperties["deviceErrorsString"] = errorsString;
+            reportedProperties["deviceErrorsCode"] = errors;
 
             await client.UpdateReportedPropertiesAsync(reportedProperties);
         }

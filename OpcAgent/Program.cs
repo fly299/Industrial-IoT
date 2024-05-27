@@ -27,6 +27,7 @@ namespace IndustrialIoT
             while (true)
             {
                 device.SendMessages(OpcDevice.client, deviceNumber);
+                //device.updateCheck(OpcDevice.client);
                 Thread.Sleep(1000);
             }
         }
