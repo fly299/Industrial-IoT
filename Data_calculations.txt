@@ -1,0 +1,20 @@
+SELECT
+workorderid,
+AVG(temperature) AS avg_temperature,
+MIN(temperature) AS min_temperature,
+MAX(temperature) AS max_temperature
+INTO
+[temp]
+FROM
+[FirstDevice]
+GROUP BY workorderid, HoppingWindow(minute,5,1);
+
+SELECT
+workorderid,
+(SUM(goodCount) / (SUM(goodCount) + SUM(badCount)) * 100) AS prodkpi_percentage
+INTO
+[prod-kpi]
+FROM
+[FirstDevice]
+GROUP BY workorderid, TumblingWindow(minute,5);
+
